@@ -730,6 +730,12 @@ async function generateMoodBoard(){
 
     const keywords = extractKeywords(cleanedText);
     keywords.push(...hiddenKeywords);
+    const translatedKeywords = await translateKeywords(keywords);
+    const searchKeywords = Array.from(new Set([
+        ...translatedKeywords.filter(Boolean),
+        ...keywords.filter(Boolean)
+    ]));
+    const pexelsLocale = getPexelsLocaleForText(cleanedText);
 
     const chaosLevel = parseInt(document.getElementById("chaos").value);
     const imagesPerKeyword = parseInt(document.getElementById("imagesPerKeyword").value);
@@ -737,12 +743,18 @@ async function generateMoodBoard(){
 
     document.getElementById("loading").style.display = "block";
 
-    const promises = keywords.map(keyword =>
-        fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=${imagesPerKeyword}`, { headers: { Authorization: PEXELS_API_KEY } })
-        .then(r => r.json())
-        .then(d => d.photos || [])
-        .catch(() => [])
-    );
+    const promises = searchKeywords.map(keyword => {
+        const params = new URLSearchParams({
+            query: keyword,
+            per_page: imagesPerKeyword.toString()
+        });
+        if(pexelsLocale) params.set("locale", pexelsLocale);
+
+        return fetch(`https://api.pexels.com/v1/search?${params.toString()}`, { headers: { Authorization: PEXELS_API_KEY } })
+            .then(r => r.json())
+            .then(d => d.photos || [])
+            .catch(() => []);
+    });
 
     const photoArrays = await Promise.all(promises);
     const photos = photoArrays.flat().filter(Boolean);
@@ -754,7 +766,8 @@ async function generateMoodBoard(){
     const cols = photos.length === 1 ? 1 : 2;
     const imageWidth = (moodboardCanvas.width - padding * (cols + 1)) / cols;
 
-    const textToDraw = distortPhrase(cleanedText, chaosLevel).replace(/"/g, "").toUpperCase();
+    const cleanedDisplayText = cleanedText.replace(/["“”‘’‹›«»]/g, " ");
+    const textToDraw = distortPhrase(cleanedDisplayText, chaosLevel).toUpperCase();
 
     for(let index = 0; index < photos.length; index++){
         try{
@@ -1145,7 +1158,7 @@ function extractKeywords(text){
     const keywords = [];
     const seen = new Set();
 
-    const phraseRegex = /"([^"]+)"/g;
+    const phraseRegex = /(?:["“”‘’‹›«»])([^"“”‘’‹›«»]+)(?:["“”‘’‹›«»])/g;
     let match;
     let remaining = normalized;
 
@@ -1162,7 +1175,7 @@ function extractKeywords(text){
         remaining = remaining.replace(match[0], " ");
     }
 
-    const cleaned = remaining.replace(/[^a-z\s]/g, " ");
+    const cleaned = remaining.replace(/[^\p{L}\s]/gu, " ");
     const words = cleaned.split(/\s+/).filter(w => w.length > 1 && !keywordStopwords.has(w));
 
     for(const word of words){
@@ -1174,6 +1187,92 @@ function extractKeywords(text){
     }
 
     return keywords;
+}
+
+async function translateTextToEnglish(text){
+    if(!text.trim()) return text;
+
+    const googleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    try{
+        const response = await fetch(googleUrl);
+        if(response.ok){
+            const data = await response.json();
+            const translatedText = Array.isArray(data) && Array.isArray(data[0])
+                ? data[0].map(item => item[0]).filter(Boolean).join("")
+                : null;
+            if(translatedText && translatedText !== text) return translatedText;
+        }
+    } catch(googleError){
+        console.warn("Google translate failed, falling back:", googleError);
+    }
+
+    const sourceLang = detectLanguageFromText(text);
+    if(!sourceLang || sourceLang === "en"){
+        return text;
+    }
+
+    try{
+        const memoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(sourceLang + "|en")}`;
+        const response = await fetch(memoryUrl);
+        if(!response.ok){
+            const body = await response.text().catch(() => "");
+            throw new Error(`MyMemory request failed (${response.status}): ${body}`);
+        }
+        const data = await response.json();
+        const translatedText = data?.responseData?.translatedText;
+        if(translatedText && translatedText !== text){
+            return translatedText;
+        }
+    } catch(memoryError){
+        console.warn("MyMemory translate failed:", memoryError);
+    }
+
+    return text;
+}
+
+function detectLanguageFromText(text){
+    const trimmed = text.trim();
+    if(!trimmed) return null;
+
+    const patterns = [
+        { code: "ja", regex: /[\u3040-\u30FF]/ },
+        { code: "ko", regex: /[\uAC00-\uD7AF]/ },
+        { code: "zh", regex: /[\u4E00-\u9FFF\u3400-\u4DBF]/ },
+        { code: "ru", regex: /[\u0400-\u04FF]/ },
+        { code: "el", regex: /[\u0370-\u03FF]/ },
+        { code: "ar", regex: /[\u0600-\u06FF\u0750-\u077F]/ },
+        { code: "he", regex: /[\u0590-\u05FF]/ },
+        { code: "hi", regex: /[\u0900-\u097F]/ },
+        { code: "th", regex: /[\u0E00-\u0E7F]/ },
+        { code: "bn", regex: /[\u0980-\u09FF]/ },
+        { code: "si", regex: /[\u0D80-\u0DFF]/ },
+        { code: "fr", regex: /\b(?:bonjour|merci|oui|non|le|la|les|un|une|des|et|dans|pour|avec|pas|sur|chez)\b/i },
+        { code: "es", regex: /\b(?:hola|gracias|sí|no|el|la|los|las|un|una|de|y|en|por|para|con|sin)\b/i }
+    ];
+
+    for(const item of patterns){
+        if(item.regex.test(trimmed)){
+            return item.code;
+        }
+    }
+
+    return null;
+}
+
+function getPexelsLocaleForText(text){
+    const lang = detectLanguageFromText(text);
+    if(lang === "fr") return "fr-FR";
+    if(lang === "es") return "es-ES";
+    return null;
+}
+
+async function translateKeywords(keywords){
+    const translated = await Promise.all(keywords.map(async keyword => {
+        const trimmed = keyword.trim();
+        if(!trimmed) return trimmed;
+        return await translateTextToEnglish(trimmed);
+    }));
+    return translated;
 }
 
 </script>

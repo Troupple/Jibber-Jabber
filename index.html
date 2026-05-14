@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Jibber Jabbler</title>
+
+<link rel="icon" type="image/svg+xml" href="SVG/favicon.svg">
+<link rel="icon" type="image/png" sizes="16x16" href="1x/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="2x/favicon@2x.png">
+<link rel="icon" type="image/png" sizes="48x48" href="3x/favicon@3x.png">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Playfair+Display:ital@1&display=swap');
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background: radial-gradient(circle at 1px 1px, #999 1px, transparent 0) 0 0 / 20px 20px #f5f5f5;
+    color:#111;
+    font-family:Arial, Helvetica, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    transition: background 0.3s, color 0.3s;
+}
+
+.container{
+    width:100%;
+    max-width:1000px;
+    background:white;
+    border:4px solid #111;
+    padding:20px;
+    box-shadow:12px 12px 0 #111;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+h1{
+    margin-top:0;
+    font-size:2.5rem;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+h1 img {
+    height: 1em;
+    width: auto;
+    display: inline-block;
+}
+
+.tagline {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.beautifully {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.7rem;
+}
+
+.vowel-info {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+p{
+    font-size:1rem;
+    margin-bottom:20px;
+}
+
+textarea,
+.output{
+    font-family: 'DM Mono', monospace;
+}
+
+textarea{
+    width:100%;
+    min-height:220px;
+    resize:vertical;
+    border:3px solid #111;
+    padding:18px;
+    font-size:1rem;
+    outline:none;
+    background:#fafafa;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin:18px 0;
+}
+
+button{
+    border:none;
+    background:#111;
+    color:white;
+    padding:14px 20px;
+    font-size:1rem;
+    cursor:pointer;
+    text-transform:uppercase;
+    font-weight:bold;
+    transition: background 0.3s, color 0.3s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+.slider-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border:3px solid #111;
+    padding:10px 14px;
+    background:white;
+    font-weight:bold;
+    flex: 1 1 320px;
+    min-width: 260px;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+    .slider-group {
+        display:flex;
+        flex-wrap:wrap;
+        gap:12px;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .slider-group .slider-wrap {
+        flex: 1 1 calc(50% - 6px);
+    }
+
+    input[type="range"] {
+        width: 180px;
+        accent-color: black;
+        background: transparent;
+        outline: none;
+    }
+
+    input[type="range"]:focus {
+        outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 8px;
+        background: #111;
+        border-radius: 999px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #111;
+        border: 2px solid #fff;
+        margin-top: -5px;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-track {
+        height: 8px;
+        background: #111;
+        border-radius: 999px;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #111;
+        border: 2px solid #fff;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-ms-track {
+        width: 100%;
+        height: 8px;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+    }
+
+    input[type="range"]::-ms-fill-lower,
+    input[type="range"]::-ms-fill-upper {
+        background: #111;
+        border-radius: 999px;
+    }
+
+    input[type="range"]::-ms-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #111;
+        border: 2px solid #fff;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:focus,
+    input[type="range"]::-moz-range-thumb:focus,
+    input[type="range"]::-ms-thumb:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+
+.output{
+    margin-top:20px;
+    border:3px solid #111;
+    background:#f0f0f0;
+    padding:20px;
+    min-height:220px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    font-size:1rem;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.footer{
+    margin-top:14px;
+    font-size:0.9rem;
+    opacity:0.7;
+    transition: color 0.3s;
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 15px;
+        box-shadow: 8px 8px 0 #111;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .slider-wrap {
+        justify-content: space-between;
+    }
+
+    input[type="range"] {
+        width: 100px;
+    }
+
+    .moodboard-mobile {
+        display: block;
+    }
+
+    #moodboard {
+        display: none;
+    }
+}
+
+.help-btn {
+    border: none;
+    background: #111;
+    color: white;
+    padding: 14px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.help-btn:hover {
+    transform: translateY(-2px);
+}
+
+.container {
+    position: relative;
+}
+
+#helpText {
+    display: none;
+}
+
+.moodboard-mobile {
+    margin-top: 20px;
+}
+
+.moodboard-mobile .tile {
+    position: relative;
+    margin-bottom: 20px;
+    border: 3px solid #111;
+    background: white;
+    min-height: 240px;
+}
+
+.moodboard-mobile img {
+    width: 100%;
+    height: auto;
+    display: block;
+    min-height: 240px;
+    object-fit: cover;
+}
+
+.moodboard-mobile .caption {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: black;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+}
+
+.moodboard-mobile .download-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <button class="help-btn" onclick="toggleHelp()" title="Show/Hide Help">?</button>
+    <h1>The <img src="SVG/J.svg" alt="J">ibber <img src="SVG/J.svg" alt="J">abbler</h1>
+    <p class="tagline">Ruin Text <span class="beautifully">Beautifully</span></p>
+    <p class="vowel-info">This site removes, or replaces vowels in words to create mangled, beautiful text.</p>
+    <div id="helpText">
+        <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Sliding Distortion up increases the likelihood that vowels will be swapped, removed, or scrambled, making the text more mangled.</p>
+        <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Wrap a phrase in quotes, like "red shoes" or "burger and smoothie", to search that exact phrase inside of Pexels.</p>
+        <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Use {} to add hidden keywords for image search without including them in the distorted text.</p>
+    </div>
+
+    <textarea id="input" placeholder="Paste text here..."></textarea>
+
+    <div class="controls">
+        <button onclick="distortText()">Distort Text</button>
+        <button onclick="copyOutput()">Copy Output</button>
+        <button onclick="clearAll()">Clear</button>
+
+        <div class="slider-group">
+            <div class="slider-wrap">
+                <span>Distortion</span>
+                <input type="range" id="chaos" min="1" max="100" value="50">
+                <span id="chaosValue">50%</span>
+            </div>
+
+            <div class="slider-wrap">
+                <span>Images per Keyword</span>
+                <input type="range" id="imagesPerKeyword" min="1" max="20" value="10">
+                <span id="imagesPerKeywordValue">5</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="output" id="output"></div>
+
+    <div class="controls">
+        <button onclick="generateMoodBoard()">Generate Meme</button>
+    </div>
+
+    <div id="loading" style="display:none; margin:20px 0; text-align:center;">
+        <div style="border:3px solid #f3f3f3; border-top:3px solid #111; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; margin:0 auto;"></div>
+        <p>Loading images...</p>
+    </div>
+
+    <canvas id="moodboard" width="1000" style="width:100%; max-width:1000px; height:auto; border:3px solid #111; background:white;"></canvas>
+
+    <div class="moodboard-mobile" id="moodboard-mobile"></div>
+
+    <div class="footer">
+        The Jibber Jabbler by <a href="https://jambles.fun" target="_blank" style="color:#111; text-decoration:none; font-weight:bold;">Jambles.fun</a> | Powered by Pexels API | <a href="mailto:Hi@jambles.fun" style="color:#111; text-decoration:none; font-weight:bold;">Hi@jambles.fun</a>
+    </div>
+</div>
+
+<audio id="clickSound" preload="auto">
+    <source src="click_001.ogg" type="audio/ogg">
+</audio>
+<audio id="selectSound" preload="auto">
+    <source src="select_002.ogg" type="audio/ogg">
+</audio>
+
+<script>
+const vowels = "aeiouAEIOU";
+const keywordStopwords = new Set([
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves",
+    "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them",
+    "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am",
+    "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did",
+    "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at",
+    "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above",
+    "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further",
+    "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few",
+    "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"
+]);
+let generatedTiles = [];
+let hoverTileIndex = -1;
+
+const chaosSlider = document.getElementById("chaos");
+const chaosValue = document.getElementById("chaosValue");
+const imagesPerKeywordSlider = document.getElementById("imagesPerKeyword");
+const imagesPerKeywordValue = document.getElementById("imagesPerKeywordValue");
+const moodboardCanvas = document.getElementById("moodboard");
+const downloadIconSrc = 'download-square.svg';
+const downloadIcon = new Image();
+downloadIcon.crossOrigin = "anonymous";
+downloadIcon.src = downloadIconSrc;
+
+const clickSound = document.getElementById("clickSound");
+const selectSound = document.getElementById("selectSound");
+
+function playClickSound() {
+    clickSound.currentTime = 0;
+    clickSound.play().catch(e => console.log("Audio play failed:", e));
+}
+
+function playSelectSound() {
+    selectSound.currentTime = 0;
+    selectSound.play().catch(e => console.log("Audio play failed:", e));
+}
+
+chaosSlider.addEventListener("input", () => {
+    chaosValue.textContent = chaosSlider.value + "%";
+});
+chaosSlider.addEventListener("change", () => {
+    chaosValue.textContent = chaosSlider.value + "%";
+    playSelectSound();
+});
+
+imagesPerKeywordSlider.addEventListener("input", () => {
+    imagesPerKeywordValue.textContent = imagesPerKeywordSlider.value;
+});
+imagesPerKeywordSlider.addEventListener("change", () => {
+    imagesPerKeywordValue.textContent = imagesPerKeywordSlider.value;
+    playSelectSound();
+});
+
+document.querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", playClickSound);
+});
+
+moodboardCanvas.addEventListener("mousemove", handleCanvasMouseMove);
+moodboardCanvas.addEventListener("mouseleave", handleCanvasMouseLeave);
+moodboardCanvas.addEventListener("click", handleCanvasClick);
+
+function shuffleArray(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function distortWord(word, chaosLevel){
+    const chars = word.split("");
+    let vowelIndexes = [];
+    let vowelChars = [];
+
+    for(let i = 0; i < chars.length; i++){
+        if(vowels.includes(chars[i])){
+            vowelIndexes.push(i);
+            vowelChars.push(chars[i]);
+        }
+    }
+
+    if(vowelChars.length === 0) return word;
+
+    if(vowelChars.length === 1){
+        const alternativeVowels = "aeiou".split("").filter(v => v.toLowerCase() !== vowelChars[0].toLowerCase());
+        const replacement = alternativeVowels[Math.floor(Math.random() * alternativeVowels.length)];
+        const newVowel = chars[vowelIndexes[0]] === chars[vowelIndexes[0]].toUpperCase()
+            ? replacement.toUpperCase()
+            : replacement;
+        chars[vowelIndexes[0]] = newVowel;
+        return chars.join("");
+    }
+
+    vowelChars = shuffleArray(vowelChars);
+
+    let survivingVowels = [];
+
+    vowelChars.forEach(v => {
+        const removeChance = chaosLevel / 100;
+        if(Math.random() > removeChance * 0.6){
+            survivingVowels.push(v);
+        }
+    });
+
+    if(survivingVowels.length === 0){
+        survivingVowels.push(vowelChars[Math.floor(Math.random() * vowelChars.length)]);
+    }
+
+    let vp = 0;
+    for(let i = 0; i < vowelIndexes.length; i++){
+        const idx = vowelIndexes[i];
+        if(vp < survivingVowels.length){
+            chars[idx] = survivingVowels[vp++];
+        } else {
+            chars[idx] = "";
+        }
+    }
+
+    return chars.join("");
+}
+
+function distortPhrase(text, chaosLevel){
+    return text.split('\n').map(line => {
+        const processedTokens = line.split(/(\s+)/).map(token => {
+            if(token.trim() === "") return token;
+            return token.replace(/[A-Za-z]+/g, w => distortWord(w, chaosLevel));
+        });
+        return processedTokens.join("");
+    }).join('\n');
+}
+
+function distortText(){
+    const input = document.getElementById("input").value;
+    const chaosLevel = parseInt(document.getElementById("chaos").value, 10) || 50;
+
+    document.getElementById("output").textContent = distortPhrase(input, chaosLevel);
+}
+
+function copyOutput(){
+    navigator.clipboard.writeText(document.getElementById("output").textContent);
+}
+
+function clearAll(){
+    document.getElementById("input").value = "";
+    document.getElementById("output").textContent = "";
+    generatedTiles = [];
+    document.getElementById("moodboard-mobile").innerHTML = "";
+    document.getElementById("loading").style.display = "none";
+}
+
+function toggleHelp(){
+    const helpText = document.getElementById("helpText");
+    if(helpText.style.display === "none" || helpText.style.display === ""){
+        helpText.style.display = "block";
+    } else {
+        helpText.style.display = "none";
+    }
+}
+
+function toggleDarkMode(){
+    document.body.classList.toggle("dark-mode");
+}
+
+const PEXELS_API_KEY = "uGZC1E6ltqgbfh2WHE9U55FqdrD7IhqIUo8zh9lGQnpQ7ab7bxbgCKvx"; // Pexels is free so don't steal the key, please :)
+
+function loadImage(srcOrBlob){
+    return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => {
+            if(img._objectURL) URL.revokeObjectURL(img._objectURL);
+            res(img);
+        };
+        img.onerror = rej;
+
+        if(srcOrBlob instanceof Blob){
+            const url = URL.createObjectURL(srcOrBlob);
+            img._objectURL = url;
+            img.src = url;
+        } else {
+            img.crossOrigin = "anonymous";
+            img.src = srcOrBlob;
+        }
+    });
+}
+
+function sanitizeFilename(name){
+    return name
+        .toString()
+        .trim()
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[^a-zA-Z0-9\-\s_]/g, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase()
+        .slice(0, 80);
+}
+
+async function fetchImageBlob(src){
+    const response = await fetch(src, { mode: 'cors' });
+    if(!response.ok) throw new Error('Image fetch failed');
+    return await response.blob();
+}
+
+async function generateMoodBoard(){
+    generatedTiles = [];
+    hoverTileIndex = -1;
+
+    const text = document.getElementById("input").value;
+    if(!text.trim()) return alert("Enter some text first.");
+
+    const hiddenKeywords = [];
+    const cleanedText = text.replace(/{([^}]+)}/g, (match, inside) => {
+        const keyword = inside.trim();
+        if(keyword.length > 0){
+            hiddenKeywords.push(keyword);
+        }
+        return '';
+    });
+
+    const keywords = extractKeywords(cleanedText);
+    keywords.push(...hiddenKeywords);
+
+    const chaosLevel = parseInt(document.getElementById("chaos").value);
+    const imagesPerKeyword = parseInt(document.getElementById("imagesPerKeyword").value);
+    const cols = 2;
+    const padding = 20;
+    const imageHeight = 240;
+    const imageWidth = (moodboardCanvas.width - padding * 3) / cols;
+
+    document.getElementById("loading").style.display = "block";
+
+    const promises = keywords.map(keyword =>
+        fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=${imagesPerKeyword}`, { headers: { Authorization: PEXELS_API_KEY } })
+        .then(r => r.json())
+        .then(d => d.photos || [])
+        .catch(() => [])
+    );
+
+    const photoArrays = await Promise.all(promises);
+    const photos = photoArrays.flat().filter(Boolean);
+    if(!photos.length) {
+        document.getElementById("loading").style.display = "none";
+        return alert("No images found for this input.");
+    }
+
+    const rows = Math.ceil(photos.length / cols);
+    moodboardCanvas.height = rows * (imageHeight + 90) + padding;
+    moodboardCanvas.style.height = moodboardCanvas.height + "px";
+
+    const textToDraw = distortPhrase(cleanedText, chaosLevel).replace(/"/g, "").toUpperCase();
+
+    for(let index = 0; index < photos.length; index++){
+        try{
+            const imageBlob = await fetchImageBlob(photos[index].src.large);
+            const img = await loadImage(imageBlob);
+            const x = padding + (index % cols) * (imageWidth + padding);
+            const y = padding + Math.floor(index / cols) * (imageHeight + 90);
+
+            generatedTiles.push({
+                img,
+                text: textToDraw,
+                width: imageWidth,
+                height: imageHeight,
+                x,
+                y,
+                iconX: x + imageWidth - 42,
+                iconY: y + 12,
+                iconSize: 28
+            });
+
+        } catch(err){
+            console.error(err);
+        }
+    }
+
+    drawMoodboardCanvas();
+    if(window.matchMedia("(max-width: 600px)").matches){
+        await generateMobileMoodboard(photos, textToDraw);
+    } else {
+        document.getElementById("moodboard-mobile").innerHTML = "";
+    }
+    document.getElementById("loading").style.display = "none";
+}
+
+async function generateMobileMoodboard(photos, textToDraw){
+    const mobileContainer = document.getElementById("moodboard-mobile");
+    mobileContainer.innerHTML = "";
+
+    for(let index = 0; index < photos.length; index++){
+        const tileDiv = document.createElement("div");
+        tileDiv.className = "tile";
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 1000;
+        canvas.height = 600;
+        canvas.style.width = "100%";
+        canvas.style.height = "auto";
+        canvas.style.display = "block";
+        canvas.style.minHeight = "240px";
+
+        const downloadBtn = document.createElement("div");
+        downloadBtn.className = "download-btn";
+        const downloadIconEl = document.createElement("img");
+        downloadIconEl.src = downloadIconSrc;
+        downloadIconEl.alt = "Download";
+        downloadIconEl.style.width = "16px";
+        downloadIconEl.style.height = "16px";
+        downloadIconEl.style.display = "block";
+        downloadIconEl.style.objectFit = "contain";
+        downloadBtn.appendChild(downloadIconEl);
+
+        try{
+            const imageBlob = await fetchImageBlob(photos[index].src.large);
+            const loadedImg = await loadImage(imageBlob);
+            drawMobileTile(canvas, loadedImg, textToDraw);
+
+            downloadBtn.onclick = () => {
+                canvas.toBlob(blob => {
+                    if(!blob) return;
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `jibber-jabbler-${index + 1}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                });
+            };
+        } catch(err){
+            console.error(err);
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Image failed to load", canvas.width / 2, canvas.height / 2);
+            downloadBtn.onclick = () => alert("Download not available");
+        }
+
+        tileDiv.appendChild(canvas);
+        tileDiv.appendChild(downloadBtn);
+        mobileContainer.appendChild(tileDiv);
+    }
+}
+
+function drawMobileTile(canvas, image, textToDraw){
+    const ctx = canvas.getContext("2d");
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    const imgAspect = image.naturalWidth / image.naturalHeight;
+    const targetAspect = canvasWidth / canvasHeight;
+    let sx = 0;
+    let sy = 0;
+    let sw = image.naturalWidth;
+    let sh = image.naturalHeight;
+
+    if(imgAspect > targetAspect){
+        sw = image.naturalHeight * targetAspect;
+        sx = (image.naturalWidth - sw) / 2;
+    } else {
+        sh = image.naturalWidth / targetAspect;
+        sy = (image.naturalHeight - sh) / 2;
+    }
+
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, canvasWidth, canvasHeight);
+    
+    const fontSize = 44;
+    const lineHeight = 60;
+    const padding = 20;
+    const maxWidth = canvasWidth - 60;
+    
+    let lines = textToDraw.split("\n");
+    
+    if(lines.length === 1){
+        ctx.font = `bold ${fontSize}px Arial`;
+        const words = textToDraw.split(" ");
+        lines = [];
+        let currentLine = "";
+        
+        for(let word of words){
+            const testLine = currentLine ? currentLine + " " + word : word;
+            if(ctx.measureText(testLine).width > maxWidth && currentLine){
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if(currentLine) lines.push(currentLine);
+    }
+    
+    const barHeight = Math.max(120, (lines.length * lineHeight) + (padding * 2));
+    
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvasWidth, barHeight);
+    
+    ctx.fillStyle = "white";
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    
+    const totalTextHeight = lines.length * lineHeight;
+    const startY = barHeight / 2 - (totalTextHeight / 2) + (lineHeight / 2);
+    
+    for(let i = 0; i < lines.length; i++){
+        ctx.fillText(lines[i], canvasWidth / 2, startY + i * lineHeight);
+    }
+}
+
+function drawMoodboardCanvas(){
+    const ctx = moodboardCanvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, moodboardCanvas.width, moodboardCanvas.height);
+
+    const fontSize = 18;
+    const lineHeight = 26;
+    const padding = 10;
+    const cols = 2;
+    const tileWidth = generatedTiles[0]?.width || 240;
+    const maxWidth = tileWidth - 40;
+    
+    const barHeights = [];
+    ctx.font = `bold ${fontSize}px Arial`;
+    
+    for(let tile of generatedTiles){
+        let lines = [];
+        for(const segment of tile.text.split("\n")){
+            const words = segment.split(" ");
+            let currentLine = "";
+            for(const word of words){
+                const testLine = currentLine ? currentLine + " " + word : word;
+                if(ctx.measureText(testLine).width > maxWidth && currentLine){
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if(currentLine) lines.push(currentLine);
+        }
+        const barHeight = Math.max(70, lines.length * lineHeight + padding * 2);
+        barHeights.push(barHeight);
+    }
+    
+    let currentY = padding;
+    for(let i = 0; i < generatedTiles.length; i++){
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        
+        if(col === 0 && row > 0){
+            const prevRowStart = (row - 1) * cols;
+            const prevRowEnd = Math.min(row * cols, generatedTiles.length);
+            let maxPrevBarHeight = 0;
+            for(let j = prevRowStart; j < prevRowEnd; j++){
+                maxPrevBarHeight = Math.max(maxPrevBarHeight, barHeights[j]);
+            }
+            currentY += generatedTiles[prevRowStart].height + maxPrevBarHeight + padding;
+        }
+        
+        const x = padding + col * (generatedTiles[0].width + padding);
+        generatedTiles[i].x = x;
+        generatedTiles[i].y = currentY;
+        generatedTiles[i].iconX = x + generatedTiles[i].width - 42;
+        generatedTiles[i].iconY = currentY + 12;
+    }
+    
+    let totalHeight = padding;
+    for(let row = 0; row < Math.ceil(generatedTiles.length / cols); row++){
+        const rowStart = row * cols;
+        const rowEnd = Math.min((row + 1) * cols, generatedTiles.length);
+        let maxBarHeightInRow = 0;
+        for(let i = rowStart; i < rowEnd; i++){
+            maxBarHeightInRow = Math.max(maxBarHeightInRow, barHeights[i]);
+        }
+        totalHeight += generatedTiles[rowStart].height + maxBarHeightInRow + padding;
+    }
+    moodboardCanvas.height = totalHeight;
+    moodboardCanvas.style.height = totalHeight + "px";
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, moodboardCanvas.width, moodboardCanvas.height);
+    
+    generatedTiles.forEach((tile, index) => {
+        ctx.drawImage(tile.img, tile.x, tile.y, tile.width, tile.height);
+
+        let lines = [];
+        for(const segment of tile.text.split("\n")){
+            const words = segment.split(" ");
+            let currentLine = "";
+            for(const word of words){
+                const testLine = currentLine ? currentLine + " " + word : word;
+                if(ctx.measureText(testLine).width > maxWidth && currentLine){
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if(currentLine) lines.push(currentLine);
+        }
+
+        const barHeight = barHeights[index];
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(tile.x, tile.y, tile.width, barHeight);
+
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const totalTextHeight = lines.length * lineHeight;
+        const textStartY = tile.y + barHeight / 2 - (totalTextHeight / 2) + (lineHeight / 2);
+        
+        lines.forEach((line, i) => {
+            ctx.fillText(line, tile.x + tile.width / 2, textStartY + i * lineHeight);
+        });
+
+        if(index === hoverTileIndex){
+            const iconX = tile.iconX;
+            const iconY = tile.iconY;
+            const size = tile.iconSize;
+
+            ctx.save();
+            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+            ctx.beginPath();
+            ctx.arc(iconX + size / 2, iconY + size / 2, size / 2 + 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            if(downloadIcon.complete && downloadIcon.naturalWidth){
+                ctx.drawImage(downloadIcon, iconX, iconY, size, size);
+            } else {
+                ctx.fillStyle = "white";
+                ctx.fillRect(iconX + size * 0.47, iconY + size * 0.15, size * 0.06, size * 0.42);
+                ctx.beginPath();
+                ctx.moveTo(iconX + size * 0.28, iconY + size * 0.55);
+                ctx.lineTo(iconX + size * 0.72, iconY + size * 0.55);
+                ctx.lineTo(iconX + size * 0.5, iconY + size * 0.85);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+    });
+}
+
+function getCanvasCoordinates(event){
+    const rect = moodboardCanvas.getBoundingClientRect();
+    const scaleX = moodboardCanvas.width / rect.width;
+    const scaleY = moodboardCanvas.height / rect.height;
+    return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
+    };
+}
+
+function handleCanvasMouseMove(event){
+    const { x, y } = getCanvasCoordinates(event);
+
+    let foundIndex = -1;
+    generatedTiles.forEach((tile, index) => {
+        if(x >= tile.x && x <= tile.x + tile.width && y >= tile.y && y <= tile.y + tile.height){
+            foundIndex = index;
+        }
+    });
+
+    if(foundIndex !== hoverTileIndex){
+        hoverTileIndex = foundIndex;
+        moodboardCanvas.style.cursor = foundIndex >= 0 ? "pointer" : "default";
+        drawMoodboardCanvas();
+    }
+}
+
+function handleCanvasMouseLeave(){
+    if(hoverTileIndex !== -1){
+        hoverTileIndex = -1;
+        moodboardCanvas.style.cursor = "default";
+        drawMoodboardCanvas();
+    }
+}
+
+function getTileIndexAtPosition(x, y){
+    return generatedTiles.findIndex(tile =>
+        x >= tile.x && x <= tile.x + tile.width &&
+        y >= tile.y && y <= tile.y + tile.height
+    );
+}
+
+function handleCanvasClick(event){
+    const { x, y } = getCanvasCoordinates(event);
+    const foundIndex = getTileIndexAtPosition(x, y);
+    if(foundIndex === -1) return;
+
+    const tile = generatedTiles[foundIndex];
+    if(x >= tile.iconX && x <= tile.iconX + tile.iconSize && y >= tile.iconY && y <= tile.iconY + tile.iconSize){
+        downloadTile(foundIndex);
+    }
+}
+
+function downloadTile(index){
+    const tile = generatedTiles[index];
+    if(!tile) return;
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = tile.width;
+    tempCanvas.height = tile.height;
+
+    const ctx = tempCanvas.getContext("2d");
+    ctx.drawImage(tile.img, 0, 0, tile.width, tile.height);
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, tile.width, 70);
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(tile.text, tile.width / 2, 35);
+
+    tempCanvas.toBlob(blob => {
+        if(!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `jibber-jabbler-${index + 1}.png`;
+        document.body.appendChild(link);
+        link.dispatchEvent(new MouseEvent('click'));
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+}
+
+function extractKeywords(text){
+    const normalized = text.toLowerCase();
+    const keywords = [];
+    const seen = new Set();
+
+    const phraseRegex = /"([^"]+)"/g;
+    let match;
+    let remaining = normalized;
+
+    while((match = phraseRegex.exec(normalized)) !== null){
+        const phrase = match[1].trim();
+        const phraseWords = phrase.split(/\s+/);
+        if(phraseWords.length >= 2 && phraseWords.every(w => w.length > 0)){
+            const exactPhrase = phraseWords.join(" ");
+            if(!seen.has(exactPhrase)){
+                seen.add(exactPhrase);
+                keywords.push(exactPhrase);
+            }
+        }
+        remaining = remaining.replace(match[0], " ");
+    }
+
+    const cleaned = remaining.replace(/[^a-z\s]/g, " ");
+    const words = cleaned.split(/\s+/).filter(w => w.length > 1 && !keywordStopwords.has(w));
+
+    for(const word of words){
+        if(keywords.length >= 5) break;
+        if(!seen.has(word)){
+            seen.add(word);
+            keywords.push(word);
+        }
+    }
+
+    return keywords;
+}
+
+</script>
+
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="jambles" data-description="Support me on Buy me a coffee!" data-message="Thanks for visiting! If you like my work consider supporting me." data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+
+</body>
+</html>

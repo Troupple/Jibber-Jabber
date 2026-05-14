@@ -377,10 +377,11 @@ button:hover{
 
 .moodboard-mobile img {
     width: 100%;
+    max-width: 100%;
     height: auto;
     display: block;
     min-height: 240px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .moodboard-mobile .caption {
@@ -732,10 +733,7 @@ async function generateMoodBoard(){
 
     const chaosLevel = parseInt(document.getElementById("chaos").value);
     const imagesPerKeyword = parseInt(document.getElementById("imagesPerKeyword").value);
-    const cols = 2;
     const padding = 20;
-    const imageHeight = 240;
-    const imageWidth = (moodboardCanvas.width - padding * 3) / cols;
 
     document.getElementById("loading").style.display = "block";
 
@@ -753,9 +751,8 @@ async function generateMoodBoard(){
         return alert("No images found for this input.");
     }
 
-    const rows = Math.ceil(photos.length / cols);
-    moodboardCanvas.height = rows * (imageHeight + 90) + padding;
-    moodboardCanvas.style.height = moodboardCanvas.height + "px";
+    const cols = photos.length === 1 ? 1 : 2;
+    const imageWidth = (moodboardCanvas.width - padding * (cols + 1)) / cols;
 
     const textToDraw = distortPhrase(cleanedText, chaosLevel).replace(/"/g, "").toUpperCase();
 
@@ -763,14 +760,16 @@ async function generateMoodBoard(){
         try{
             const imageBlob = await fetchImageBlob(photos[index].src.large);
             const img = await loadImage(imageBlob);
+            const aspectRatio = img.naturalWidth / img.naturalHeight;
+            const tileHeight = Math.max(240, Math.min(600, Math.round(imageWidth / aspectRatio)));
             const x = padding + (index % cols) * (imageWidth + padding);
-            const y = padding + Math.floor(index / cols) * (imageHeight + 90);
+            const y = padding + Math.floor(index / cols) * (tileHeight + 90);
 
             generatedTiles.push({
                 img,
                 text: textToDraw,
                 width: imageWidth,
-                height: imageHeight,
+                height: tileHeight,
                 x,
                 y,
                 iconX: x + imageWidth - 42,
@@ -784,29 +783,34 @@ async function generateMoodBoard(){
     }
 
     drawMoodboardCanvas();
-    if(window.matchMedia("(max-width: 600px)").matches){
-        await generateMobileMoodboard(photos, textToDraw);
-    } else {
-        document.getElementById("moodboard-mobile").innerHTML = "";
-    }
+    const isMobileView = window.matchMedia("(max-width: 600px)").matches || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 850);
+    const mobileWrapper = document.getElementById("moodboard-mobile");
+
+    moodboardCanvas.style.display = "none";
+    mobileWrapper.style.display = "block";
+    await generateMobileMoodboard(photos, textToDraw, !isMobileView);
+
     document.getElementById("loading").style.display = "none";
 }
 
-async function generateMobileMoodboard(photos, textToDraw){
+async function generateMobileMoodboard(photos, textToDraw, desktopPreview = false){
     const mobileContainer = document.getElementById("moodboard-mobile");
     mobileContainer.innerHTML = "";
 
     for(let index = 0; index < photos.length; index++){
         const tileDiv = document.createElement("div");
         tileDiv.className = "tile";
+        tileDiv.style.overflow = "hidden";
+        tileDiv.style.position = "relative";
 
         const canvas = document.createElement("canvas");
         canvas.width = 1000;
         canvas.height = 600;
-        canvas.style.width = "100%";
+        canvas.style.width = desktopPreview ? "50%" : "100%";
         canvas.style.height = "auto";
         canvas.style.display = "block";
-        canvas.style.minHeight = "240px";
+        canvas.style.margin = desktopPreview ? "0 auto" : "";
+        canvas.style.touchAction = "manipulation";
 
         const downloadBtn = document.createElement("div");
         downloadBtn.className = "download-btn";
@@ -824,18 +828,17 @@ async function generateMobileMoodboard(photos, textToDraw){
             const loadedImg = await loadImage(imageBlob);
             drawMobileTile(canvas, loadedImg, textToDraw);
 
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+            if(!blob) throw new Error("Canvas export failed");
+            const imageUrl = URL.createObjectURL(blob);
+
             const downloadMobileImage = () => {
-                canvas.toBlob(blob => {
-                    if(!blob) return;
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.href = url;
-                    link.download = `jibber-jabbler-${index + 1}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                });
+                const link = document.createElement("a");
+                link.href = imageUrl;
+                link.download = `jibber-jabbler-${index + 1}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             };
 
             downloadBtn.onclick = downloadMobileImage;
@@ -847,32 +850,58 @@ async function generateMobileMoodboard(photos, textToDraw){
             }, { passive: false });
             canvas.addEventListener('touchend', () => clearTimeout(longPressTimer));
             canvas.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+
+            tileDiv.appendChild(canvas);
         } catch(err){
             console.error(err);
-            const ctx = canvas.getContext("2d");
+            const errorCanvas = document.createElement("canvas");
+            errorCanvas.width = 1000;
+            errorCanvas.height = 600;
+            const ctx = errorCanvas.getContext("2d");
             ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, errorCanvas.width, errorCanvas.height);
             ctx.fillStyle = "black";
             ctx.font = "20px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("Image failed to load", canvas.width / 2, canvas.height / 2);
+            ctx.fillText("Image failed to load", errorCanvas.width / 2, errorCanvas.height / 2);
+
+            const errorUrl = errorCanvas.toDataURL();
+            const errorImg = document.createElement("img");
+            errorImg.src = errorUrl;
+            errorImg.alt = "Image load failed";
+            errorImg.style.width = "100%";
+            errorImg.style.height = "auto";
+            errorImg.style.display = "block";
+            tileDiv.appendChild(errorImg);
+
             downloadBtn.onclick = () => alert("Download not available");
         }
 
-        tileDiv.appendChild(canvas);
         tileDiv.appendChild(downloadBtn);
         mobileContainer.appendChild(tileDiv);
     }
 }
 
 function drawMobileTile(canvas, image, textToDraw){
+    const canvasWidth = 1000;
+    const imageHeight = 600;
+    const padding = 20;
+    const maxWidth = canvasWidth - 60;
+    let fontSize = 44;
+    let lineHeight = 60;
+
+    const tempCtx = document.createElement("canvas").getContext("2d");
+    tempCtx.font = `bold ${fontSize}px Arial`;
+    const lines = wrapTextLines(tempCtx, textToDraw, maxWidth);
+
+    const barHeight = Math.max(90, (lines.length * lineHeight) + (padding * 2));
+    canvas.width = canvasWidth;
+    canvas.height = imageHeight + barHeight;
     const ctx = canvas.getContext("2d");
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
 
     const imgAspect = image.naturalWidth / image.naturalHeight;
-    const targetAspect = canvasWidth / canvasHeight;
+    const targetAspect = canvasWidth / imageHeight;
     let sx = 0;
     let sy = 0;
     let sw = image.naturalWidth;
@@ -886,21 +915,10 @@ function drawMobileTile(canvas, image, textToDraw){
         sy = (image.naturalHeight - sh) / 2;
     }
 
-    const fontSize = 44;
-    const lineHeight = 60;
-    const padding = 20;
-    const maxWidth = canvasWidth - 60;
-
-    ctx.font = `bold ${fontSize}px Arial`;
-    let lines = wrapTextLines(ctx, textToDraw, maxWidth);
-
-    const barHeight = Math.max(120, (lines.length * lineHeight) + (padding * 2));
+    ctx.drawImage(image, sx, sy, sw, sh, 0, barHeight, canvasWidth, imageHeight);
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvasWidth, barHeight);
-
-    const imageHeight = canvasHeight - barHeight;
-    ctx.drawImage(image, sx, sy, sw, sh, 0, barHeight, canvasWidth, imageHeight);
 
     ctx.fillStyle = "white";
     ctx.font = `bold ${fontSize}px Arial`;
@@ -920,107 +938,105 @@ function drawMoodboardCanvas(){
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, moodboardCanvas.width, moodboardCanvas.height);
 
-    const fontSize = 18;
-    const lineHeight = 26;
+    const baseFontSize = 18;
+    const baseLineHeight = 24;
     const padding = 10;
-    const cols = 2;
+    const cols = generatedTiles.length === 1 ? 1 : 2;
     const tileWidth = generatedTiles[0]?.width || 240;
     const maxWidth = tileWidth - 40;
     
-    const barHeights = [];
-    ctx.font = `bold ${fontSize}px Arial`;
-    
     for(let tile of generatedTiles){
+        ctx.font = `bold ${baseFontSize}px Arial`;
         const lines = wrapTextLines(ctx, tile.text, maxWidth);
-        const barHeight = Math.max(70, lines.length * lineHeight + padding * 2);
-        barHeights.push(barHeight);
-        tile.barHeight = barHeight;
+        tile.displayLines = lines;
+        tile.barHeight = Math.max(60, lines.length * baseLineHeight + padding * 2);
+        tile.totalHeight = tile.height + tile.barHeight;
     }
     
-    let currentY = padding;
-    for(let i = 0; i < generatedTiles.length; i++){
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        
-        if(col === 0 && row > 0){
-            const prevRowStart = (row - 1) * cols;
-            const prevRowEnd = Math.min(row * cols, generatedTiles.length);
-            let maxPrevBarHeight = 0;
-            for(let j = prevRowStart; j < prevRowEnd; j++){
-                maxPrevBarHeight = Math.max(maxPrevBarHeight, barHeights[j]);
-            }
-            currentY += generatedTiles[prevRowStart].height + maxPrevBarHeight + padding;
-        }
-        
-        const x = padding + col * (generatedTiles[0].width + padding);
-        generatedTiles[i].x = x;
-        generatedTiles[i].y = currentY;
-        generatedTiles[i].iconX = x + generatedTiles[i].width - 42;
-        generatedTiles[i].iconY = currentY + 12;
-    }
-    
-    let totalHeight = padding;
-    for(let row = 0; row < Math.ceil(generatedTiles.length / cols); row++){
+    const rows = Math.ceil(generatedTiles.length / cols);
+    const rowHeights = [];
+    const rowBarHeights = [];
+    for(let row = 0; row < rows; row++){
         const rowStart = row * cols;
-        const rowEnd = Math.min((row + 1) * cols, generatedTiles.length);
-        let maxBarHeightInRow = 0;
+        const rowEnd = Math.min(rowStart + cols, generatedTiles.length);
+        let rowBarHeight = 0;
+        let rowHeight = 0;
         for(let i = rowStart; i < rowEnd; i++){
-            maxBarHeightInRow = Math.max(maxBarHeightInRow, barHeights[i]);
+            rowBarHeight = Math.max(rowBarHeight, generatedTiles[i].barHeight);
         }
-        totalHeight += generatedTiles[rowStart].height + maxBarHeightInRow + padding;
+        for(let i = rowStart; i < rowEnd; i++){
+            generatedTiles[i].barHeight = rowBarHeight;
+            rowHeight = Math.max(rowHeight, generatedTiles[i].height + rowBarHeight);
+        }
+        rowBarHeights.push(rowBarHeight);
+        rowHeights.push(rowHeight);
     }
+
+    const totalHeight = padding + rowHeights.reduce((sum, h) => sum + h + padding, 0);
     moodboardCanvas.height = totalHeight;
     moodboardCanvas.style.height = totalHeight + "px";
+
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, moodboardCanvas.width, moodboardCanvas.height);
-    
-    generatedTiles.forEach((tile, index) => {
-        const barHeight = tile.barHeight || barHeights[index] || 70;
-        ctx.drawImage(tile.img, tile.x, tile.y + barHeight, tile.width, tile.height);
 
-        const lines = wrapTextLines(ctx, tile.text, maxWidth);
+    for(let row = 0; row < rows; row++){
+        const rowY = padding + rowHeights.slice(0, row).reduce((sum, h) => sum + h + padding, 0);
+        const rowBarHeight = rowBarHeights[row];
+        for(let col = 0; col < cols; col++){
+            const index = row * cols + col;
+            if(index >= generatedTiles.length) break;
+            const tile = generatedTiles[index];
+            const x = padding + col * (tile.width + padding);
+            tile.x = x;
+            tile.y = rowY;
+            tile.iconX = x + tile.width - 42;
+            tile.iconY = rowY + 12;
 
-        ctx.fillStyle = "black";
-        ctx.fillRect(tile.x, tile.y, tile.width, barHeight);
+            ctx.fillStyle = "white";
+            ctx.fillRect(x, rowY + rowBarHeight, tile.width, tile.height);
+            ctx.drawImage(tile.img, x, rowY + rowBarHeight, tile.width, tile.height);
 
-        ctx.fillStyle = "white";
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, rowY, tile.width, rowBarHeight);
 
-        const totalTextHeight = lines.length * lineHeight;
-        const textStartY = tile.y + barHeight / 2 - (totalTextHeight / 2) + (lineHeight / 2);
-        
-        lines.forEach((line, i) => {
-            ctx.fillText(line, tile.x + tile.width / 2, textStartY + i * lineHeight);
-        });
+            ctx.fillStyle = "white";
+            ctx.font = `bold ${baseFontSize}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
 
-        if(index === hoverTileIndex){
-            const iconX = tile.iconX;
-            const iconY = tile.iconY;
-            const size = tile.iconSize;
+            const totalTextHeight = tile.displayLines.length * baseLineHeight;
+            const textStartY = rowY + rowBarHeight / 2 - (totalTextHeight / 2) + (baseLineHeight / 2);
+            tile.displayLines.forEach((line, i) => {
+                ctx.fillText(line, x + tile.width / 2, textStartY + i * baseLineHeight);
+            });
 
-            ctx.save();
-            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-            ctx.beginPath();
-            ctx.arc(iconX + size / 2, iconY + size / 2, size / 2 + 4, 0, Math.PI * 2);
-            ctx.fill();
+            if(index === hoverTileIndex){
+                const iconX = tile.iconX;
+                const iconY = tile.iconY;
+                const size = tile.iconSize;
 
-            if(downloadIcon.complete && downloadIcon.naturalWidth){
-                ctx.drawImage(downloadIcon, iconX, iconY, size, size);
-            } else {
-                ctx.fillStyle = "white";
-                ctx.fillRect(iconX + size * 0.47, iconY + size * 0.15, size * 0.06, size * 0.42);
+                ctx.save();
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
                 ctx.beginPath();
-                ctx.moveTo(iconX + size * 0.28, iconY + size * 0.55);
-                ctx.lineTo(iconX + size * 0.72, iconY + size * 0.55);
-                ctx.lineTo(iconX + size * 0.5, iconY + size * 0.85);
-                ctx.closePath();
+                ctx.arc(iconX + size / 2, iconY + size / 2, size / 2 + 4, 0, Math.PI * 2);
                 ctx.fill();
+
+                if(downloadIcon.complete && downloadIcon.naturalWidth){
+                    ctx.drawImage(downloadIcon, iconX, iconY, size, size);
+                } else {
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(iconX + size * 0.47, iconY + size * 0.15, size * 0.06, size * 0.42);
+                    ctx.beginPath();
+                    ctx.moveTo(iconX + size * 0.28, iconY + size * 0.55);
+                    ctx.lineTo(iconX + size * 0.72, iconY + size * 0.55);
+                    ctx.lineTo(iconX + size * 0.5, iconY + size * 0.85);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
             }
-            ctx.restore();
         }
-    });
+    }
 }
 
 function getCanvasCoordinates(event){

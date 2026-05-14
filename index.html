@@ -41,6 +41,7 @@ body{
 
 h1{
     margin-top:0;
+    margin-bottom:0.25rem;
     font-size:2.5rem;
     text-transform:uppercase;
     letter-spacing:2px;
@@ -57,7 +58,7 @@ h1 img {
 
 .tagline {
     font-size: 1.2rem;
-    margin-bottom: 20px;
+    margin: 0 0 20px;
     font-weight: bold;
 }
 
@@ -238,17 +239,59 @@ button:hover{
 
 /* Mobile styles */
 @media (max-width: 600px) {
+    html {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
     body {
-        padding: 10px;
+        overflow-x: hidden;
+        padding: 4px;
+        margin: 0;
+        width: 100%;
     }
 
     .container {
-        padding: 15px;
-        box-shadow: 8px 8px 0 #111;
+        padding: 10px;
+        max-width: 100%;
+        width: calc(100% - 4px);
+        border: 2px solid #111;
+        box-shadow: none;
     }
 
     h1 {
-        font-size: 2rem;
+        font-size: 1.62rem;
+        letter-spacing: 1px;
+        line-height: 1.05;
+    }
+
+    h1 img {
+        height: 0.9em;
+    }
+
+    .tagline {
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+
+    .beautifully {
+        font-size: 1.4rem;
+    }
+
+    .vowel-info {
+        font-size: 0.85rem;
+        margin-bottom: 18px;
+    }
+
+    textarea {
+        min-height: 180px;
+        padding: 14px;
+        font-size: 0.95rem;
+    }
+
+    button {
+        padding: 12px 16px;
+        font-size: 0.95rem;
     }
 
     .controls {
@@ -258,10 +301,31 @@ button:hover{
 
     .slider-wrap {
         justify-content: space-between;
+        padding: 8px 10px;
+        min-width: 0;
+    }
+
+    .slider-group .slider-wrap {
+        flex: 1 1 100%;
     }
 
     input[type="range"] {
-        width: 100px;
+        width: 100%;
+    }
+
+    .help-btn {
+        position: relative;
+        top: auto;
+        right: auto;
+        left: auto;
+        bottom: auto;
+        margin-bottom: 60px;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .moodboard-mobile {
@@ -350,6 +414,8 @@ button:hover{
     cursor: pointer;
     color: white;
     font-size: 14px;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 @keyframes spin {
@@ -491,6 +557,25 @@ function shuffleArray(arr){
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+}
+
+function wrapTextLines(ctx, text, maxWidth){
+    const lines = [];
+    for(const segment of text.split("\n")){
+        const words = segment.split(" ");
+        let currentLine = "";
+        for(const word of words){
+            const testLine = currentLine ? currentLine + " " + word : word;
+            if(ctx.measureText(testLine).width > maxWidth && currentLine){
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if(currentLine) lines.push(currentLine);
+    }
+    return lines;
 }
 
 function distortWord(word, chaosLevel){
@@ -739,7 +824,7 @@ async function generateMobileMoodboard(photos, textToDraw){
             const loadedImg = await loadImage(imageBlob);
             drawMobileTile(canvas, loadedImg, textToDraw);
 
-            downloadBtn.onclick = () => {
+            const downloadMobileImage = () => {
                 canvas.toBlob(blob => {
                     if(!blob) return;
                     const url = URL.createObjectURL(blob);
@@ -752,6 +837,16 @@ async function generateMobileMoodboard(photos, textToDraw){
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                 });
             };
+
+            downloadBtn.onclick = downloadMobileImage;
+
+            let longPressTimer;
+            canvas.addEventListener('touchstart', event => {
+                event.preventDefault();
+                longPressTimer = setTimeout(downloadMobileImage, 600);
+            }, { passive: false });
+            canvas.addEventListener('touchend', () => clearTimeout(longPressTimer));
+            canvas.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
         } catch(err){
             console.error(err);
             const ctx = canvas.getContext("2d");
@@ -791,46 +886,30 @@ function drawMobileTile(canvas, image, textToDraw){
         sy = (image.naturalHeight - sh) / 2;
     }
 
-    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, canvasWidth, canvasHeight);
-    
     const fontSize = 44;
     const lineHeight = 60;
     const padding = 20;
     const maxWidth = canvasWidth - 60;
-    
-    let lines = textToDraw.split("\n");
-    
-    if(lines.length === 1){
-        ctx.font = `bold ${fontSize}px Arial`;
-        const words = textToDraw.split(" ");
-        lines = [];
-        let currentLine = "";
-        
-        for(let word of words){
-            const testLine = currentLine ? currentLine + " " + word : word;
-            if(ctx.measureText(testLine).width > maxWidth && currentLine){
-                lines.push(currentLine);
-                currentLine = word;
-            } else {
-                currentLine = testLine;
-            }
-        }
-        if(currentLine) lines.push(currentLine);
-    }
-    
+
+    ctx.font = `bold ${fontSize}px Arial`;
+    let lines = wrapTextLines(ctx, textToDraw, maxWidth);
+
     const barHeight = Math.max(120, (lines.length * lineHeight) + (padding * 2));
-    
+
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvasWidth, barHeight);
-    
+
+    const imageHeight = canvasHeight - barHeight;
+    ctx.drawImage(image, sx, sy, sw, sh, 0, barHeight, canvasWidth, imageHeight);
+
     ctx.fillStyle = "white";
     ctx.font = `bold ${fontSize}px Arial`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    
+
     const totalTextHeight = lines.length * lineHeight;
     const startY = barHeight / 2 - (totalTextHeight / 2) + (lineHeight / 2);
-    
+
     for(let i = 0; i < lines.length; i++){
         ctx.fillText(lines[i], canvasWidth / 2, startY + i * lineHeight);
     }
@@ -852,23 +931,10 @@ function drawMoodboardCanvas(){
     ctx.font = `bold ${fontSize}px Arial`;
     
     for(let tile of generatedTiles){
-        let lines = [];
-        for(const segment of tile.text.split("\n")){
-            const words = segment.split(" ");
-            let currentLine = "";
-            for(const word of words){
-                const testLine = currentLine ? currentLine + " " + word : word;
-                if(ctx.measureText(testLine).width > maxWidth && currentLine){
-                    lines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
-                }
-            }
-            if(currentLine) lines.push(currentLine);
-        }
+        const lines = wrapTextLines(ctx, tile.text, maxWidth);
         const barHeight = Math.max(70, lines.length * lineHeight + padding * 2);
         barHeights.push(barHeight);
+        tile.barHeight = barHeight;
     }
     
     let currentY = padding;
@@ -909,25 +975,10 @@ function drawMoodboardCanvas(){
     ctx.fillRect(0, 0, moodboardCanvas.width, moodboardCanvas.height);
     
     generatedTiles.forEach((tile, index) => {
-        ctx.drawImage(tile.img, tile.x, tile.y, tile.width, tile.height);
+        const barHeight = tile.barHeight || barHeights[index] || 70;
+        ctx.drawImage(tile.img, tile.x, tile.y + barHeight, tile.width, tile.height);
 
-        let lines = [];
-        for(const segment of tile.text.split("\n")){
-            const words = segment.split(" ");
-            let currentLine = "";
-            for(const word of words){
-                const testLine = currentLine ? currentLine + " " + word : word;
-                if(ctx.measureText(testLine).width > maxWidth && currentLine){
-                    lines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
-                }
-            }
-            if(currentLine) lines.push(currentLine);
-        }
-
-        const barHeight = barHeights[index];
+        const lines = wrapTextLines(ctx, tile.text, maxWidth);
 
         ctx.fillStyle = "black";
         ctx.fillRect(tile.x, tile.y, tile.width, barHeight);
@@ -987,7 +1038,8 @@ function handleCanvasMouseMove(event){
 
     let foundIndex = -1;
     generatedTiles.forEach((tile, index) => {
-        if(x >= tile.x && x <= tile.x + tile.width && y >= tile.y && y <= tile.y + tile.height){
+        const tileBottom = tile.y + tile.height + (tile.barHeight || 70);
+        if(x >= tile.x && x <= tile.x + tile.width && y >= tile.y && y <= tileBottom){
             foundIndex = index;
         }
     });
@@ -1010,7 +1062,7 @@ function handleCanvasMouseLeave(){
 function getTileIndexAtPosition(x, y){
     return generatedTiles.findIndex(tile =>
         x >= tile.x && x <= tile.x + tile.width &&
-        y >= tile.y && y <= tile.y + tile.height
+        y >= tile.y && y <= tile.y + tile.height + (tile.barHeight || 70)
     );
 }
 
@@ -1030,20 +1082,34 @@ function downloadTile(index){
     if(!tile) return;
 
     const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = tile.width;
-    tempCanvas.height = tile.height;
-
     const ctx = tempCanvas.getContext("2d");
-    ctx.drawImage(tile.img, 0, 0, tile.width, tile.height);
+    const fontSize = 18;
+    const lineHeight = 26;
+    const padding = 10;
+    ctx.font = `bold ${fontSize}px Arial`;
+    const lines = wrapTextLines(ctx, tile.text, tile.width - 40);
+    const barHeight = Math.max(70, lines.length * lineHeight + padding * 2);
 
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, tile.width, 70);
+    tempCanvas.width = tile.width;
+    tempCanvas.height = tile.height + barHeight;
 
     ctx.fillStyle = "white";
-    ctx.font = "bold 18px Arial";
+    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    ctx.drawImage(tile.img, 0, 0, tile.width, tile.height, 0, barHeight, tile.width, tile.height);
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, tile.width, barHeight);
+
+    ctx.fillStyle = "white";
+    ctx.font = `bold ${fontSize}px Arial`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(tile.text, tile.width / 2, 35);
+
+    const totalTextHeight = lines.length * lineHeight;
+    const textStartY = barHeight / 2 - (totalTextHeight / 2) + (lineHeight / 2);
+    lines.forEach((line, i) => {
+        ctx.fillText(line, tile.width / 2, textStartY + i * lineHeight);
+    });
 
     tempCanvas.toBlob(blob => {
         if(!blob) return;

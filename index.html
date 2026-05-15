@@ -3,12 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Jibber Jabbler</title>
+<title>The Jibber Jabbler - Text scrambling & Meme Generator</title>
+<meta name="description" content="Transform your text beautifully with The Jibber Jabbler. Remove, replace, and scramble vowels to create mangled, artistic text. Generate memes with custom distortion levels.">
+<meta name="keywords" content="text distortion, text scrambler, vowel removal, meme generator, text mangler, creative text tool, word distortion, meme maker, text transformation">
+<meta name="author" content="Jambles">
+<meta name="robots" content="index, follow">
+<meta name="language" content="English">
+
+<!-- Social Media -->
+<meta property="og:title" content="The Jibber Jabbler - Text Scrambling & Meme Generator">
+<meta property="og:description" content="Ruin text beautifully! Scramble vowels and generate stunning memes with Pexels image search.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Jibber Jabbler">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Jibber Jabbler - Text Scrambling & Meme Generator">
+<meta name="twitter:description" content="Transform text with vowel distortion and create stunning memes powered by Pexels image search.">
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "The Jibber Jabbler",
+  "description": "A creative text distortion tool that removes, replaces, and scrambles vowels, plus generates memes with keyword-based image search from Pexels.",
+  "url": "https://jambles.fun",
+  "applicationCategory": "Utility",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CAD"
+  },
+  "creator": {
+    "@type": "Person",
+    "name": "Jambles",
+    "url": "https://jambles.fun"
+  },
+  "featureList": [
+    "Text vowel distortion engine",
+    "Adjustable distortion levels (1-100%)",
+    "Meme generation with image search",
+    "Pexels image integration",
+    "Mobile-responsive design",
+    "Custom keyword search"
+  ]
+}
+</script>
 
 <link rel="icon" type="image/svg+xml" href="SVG/favicon.svg">
 <link rel="icon" type="image/png" sizes="16x16" href="1x/favicon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="2x/favicon@2x.png">
 <link rel="icon" type="image/png" sizes="48x48" href="3x/favicon@3x.png">
+<link rel="canonical" href="https://jambles.fun">
+<link rel="alternate" hreflang="en" href="https://jambles.fun">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Playfair+Display:ital@1&display=swap');
@@ -429,42 +475,42 @@ button:hover{
 <body>
 
 <div class="container">
-    <button class="help-btn" onclick="toggleHelp()" title="Show/Hide Help">?</button>
-    <h1>The <img src="SVG/J.svg" alt="J">ibber <img src="SVG/J.svg" alt="J">abbler</h1>
+    <button class="help-btn" onclick="toggleHelp()" title="Show/Hide Help" aria-label="Toggle help information about text distortion and moodboard features">?</button>
+    <h1>The <img src="SVG/J.svg" alt="J - Jibber Jabbler Logo">ibber <img src="SVG/J.svg" alt="J - Jibber Jabbler Logo">abbler</h1>
     <p class="tagline">Ruin Text <span class="beautifully">Beautifully</span></p>
-    <p class="vowel-info">This site removes, or replaces vowels in words to create mangled, beautiful text.</p>
+<p class="vowel-info">This site removes or replaces vowels in words to create mangled, beautiful text.</p>
     <div id="helpText">
         <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Sliding Distortion up increases the likelihood that vowels will be swapped, removed, or scrambled, making the text more mangled.</p>
         <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Wrap a phrase in quotes, like "red shoes" or "burger and smoothie", to search that exact phrase inside of Pexels.</p>
         <p style="margin-top:0; opacity:0.8; font-size:0.95rem;">Use {} to add hidden keywords for image search without including them in the distorted text.</p>
     </div>
 
-    <textarea id="input" placeholder="Paste text here..."></textarea>
+    <textarea id="input" placeholder="Paste text here..." aria-label="Text input for distortion"></textarea>
 
     <div class="controls">
-        <button onclick="distortText()">Distort Text</button>
-        <button onclick="copyOutput()">Copy Output</button>
-        <button onclick="clearAll()">Clear</button>
+        <button onclick="distortText()" aria-label="Apply vowel distortion to input text">Distort Text</button>
+        <button onclick="copyOutput()" aria-label="Copy distorted text to clipboard">Copy Output</button>
+        <button onclick="clearAll()" aria-label="Clear all input and output">Clear</button>
 
         <div class="slider-group">
             <div class="slider-wrap">
                 <span>Distortion</span>
-                <input type="range" id="chaos" min="1" max="100" value="50">
+                <input type="range" id="chaos" min="1" max="100" value="50" aria-label="Distortion level slider: adjust from 1 to 100 percent">
                 <span id="chaosValue">50%</span>
             </div>
 
             <div class="slider-wrap">
                 <span>Images per Keyword</span>
-                <input type="range" id="imagesPerKeyword" min="1" max="20" value="10">
+                <input type="range" id="imagesPerKeyword" min="1" max="20" value="10" aria-label="Images per keyword slider: adjust from 1 to 20 images">
                 <span id="imagesPerKeywordValue">5</span>
             </div>
         </div>
     </div>
 
-    <div class="output" id="output"></div>
+    <div class="output" id="output" aria-label="Distorted text output"></div>
 
     <div class="controls">
-        <button onclick="generateMoodBoard()">Generate Meme</button>
+        <button onclick="generateMoodBoard()" aria-label="Generate moodboard with images and distorted text">Generate Meme</button>
     </div>
 
     <div id="loading" style="display:none; margin:20px 0; text-align:center;">
@@ -476,9 +522,9 @@ button:hover{
 
     <div class="moodboard-mobile" id="moodboard-mobile"></div>
 
-    <div class="footer">
-        The Jibber Jabbler by <a href="https://jambles.fun" target="_blank" style="color:#111; text-decoration:none; font-weight:bold;">Jambles.fun</a> | Powered by Pexels API | <a href="mailto:Hi@jambles.fun" style="color:#111; text-decoration:none; font-weight:bold;">Hi@jambles.fun</a>
-    </div>
+    <footer class="footer">
+        <p>The Jibber Jabbler by <a href="https://jambles.fun" target="_blank" rel="noopener noreferrer" style="color:#111; text-decoration:none; font-weight:bold;">Jambles.fun</a> | <a href="mailto:Hi@jambles.fun" style="color:#111; text-decoration:none; font-weight:bold;">Hi@jambles.fun</a> | Powered by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" style="color:#111; text-decoration:none; font-weight:bold;">Pexels</a></p>
+    </footer>
 </div>
 
 <audio id="clickSound" preload="auto">
@@ -1262,7 +1308,7 @@ async function translateTextToEnglish(text){
             if(translatedText && translatedText !== text) return translatedText;
         }
     } catch(googleError){
-        console.warn("Google translate failed, falling back:", googleError);
+        console.warn("Google translate failed:", googleError);
     }
 
     const sourceLang = detectLanguageFromText(text);
